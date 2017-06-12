@@ -1,0 +1,237 @@
+Lesson 3
+==================================================
+
+## Reading in Data
+```{r}
+getwd()    ##查看目录
+list.files()  ## 查看目录下面所有的文件
+
+pf <- read.csv('pseudo_facebook.tsv', sep = '\t')   ## 读取数据
+
+names(pf)   ##查看数据里面的变量
+
+install.packages('ggplot2')
+library(ggplot2)
+```
+
+## Histogram of Users' Birthdays
+```{r}
+names(pf)
+qplot(x = dob_day, data = pf) 
+```
+
+## split 1:31
+```{r}
+qplot(x = dob_day, data = pf) + scale_x_continuous(breaks = 1:31) 
+```
+
+## Faceting
+```{r}
+qplot(x = dob_day, data = pf) + scale_x_continuous(breaks = 1:31) + facet_wrap(~dob_month, ncol = 3)
+```
+
+## Friend Count
+```{r}
+qplot(x = friend_count, data = pf)
+```
+
+## Friend Count and limit long tail data, use x limit.
+```{r}
+qplot(x = friend_count, data = pf, xlim = c(0, 1000))
+```
+
+## Anthor method, 使用图层的方法
+```{r}
+qplot(x = friend_count, data = pf) + scale_x_continuous(limits = c(0, 1000))
+```
+
+## Adjusting the Bin Width
+```{r}
+qplot(x = friend_count, data = pf, binwidth = 25) + scale_x_continuous(limits = c(0, 1000), breaks = seq())
+```
+
+## split with gender
+```{r}
+qplot(x = friend_count, data = pf, binwidth = 25) + scale_x_continuous(limits = c(0, 1000), breaks = seq()) + 
+  facet_wrap(~gender)
+```
+
+## Omitting NA Gender Observations
+```{r}
+qplot(x = friend_count, data = subset(pf, !is.na(gender)),
+      binwidth = 10) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0,1000,50)) + 
+  facet_wrap(~gender)
+```
+
+## Statistics 'by' Gender
+```{r}
+table(pf$gender)
+by(pf$friend_count, pf$gender,summary)
+```
+
+
+## Labeling Plots
+```{r}
+qplot(x = tenure/365, data = pf,
+      xlab = 'Number of years using Facebook',
+      ylab = 'Number of users in sample',
+      color = I('black'),fill = I('#F79420')) +
+  scale_x_continuous(breaks = seq(1, 7, 1), lim = c(0,7))
+```
+
+```{r}
+qplot(x = age, data = pf, binwidth = 2,
+      xlab = 'age that using Facebook',
+      ylab = 'Number of users in sample') + 
+  scale_x_continuous(breaks = seq(0, 120, 10), lim = c(0,120))
+```
+
+## Transforming Data
+```{r}
+qplot(x = friend_count, data = pf)
+
+summary(pf$friend_count)
+
+summary(log10(pf$friend_count +1 ))
+
+summary(sqrt(pf$friend_count))
+```
+
+
+## 加载gridExtra安装包，以便可以在一个页面上创建多个图
+```{r}
+install.packages('gridExtra') 
+library(gridExtra) 
+```
+
+
+## 转换数据，由于数据过离散，故需要先将数据进行转换，才能看到标准偏差
+```{r}
+summary(pf$friend_count)
+summary(log10(pf$friend_count + 1))
+summary(sqrt(pf$friend_count))
+
+#将原图与转换过的图放在一起比较
+p1 = qplot(pf$friend_count) + geom_histogram()
+#p2 = qplot(log10(pf$friend_count + 1))
+#p3 = qplot(sqrt(pf$friend_count))
+
+p2 <- p1 + scale_x_log10()
+p3 <- p1 + scale_x_sqrt()
+
+grid.arrange(p1,p2,p3,ncol=1)
+```
+
+# 增加一个拓展层
+```{r}
+logScale <- qplot(x=log10(friend_count), data = pf)
+
+# scale_x_log10函数可以让x轴与原数据一直，但是绘制的曲线和log10的曲线一致。
+#使用ggplot函数时，需要同时使用geom_histogram来绘制直方图
+countScale <- ggplot(aes(x=friend_count), data=pf) + 
+  geom_histogram() + 
+  scale_x_log10()
+
+grid.arrange(logScale, countScale, ncol=2)
+```
+
+
+## 频率多边形
+```{r}
+ggplot(aes(x = friend_count, y = ..count../sum(..count..)), data = subset(pf, !is.na(gender))) + 
+  geom_freqpoly(aes(color = gender), binwidth=10) + 
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) + 
+  xlab('好友数量') + 
+  ylab('Percentage of users with that friend count') 
+```
+
+```{r}
+ggplot(aes(x = www_likes), data = subset(pf, !is.na(gender))) + 
+  geom_freqpoly(aes(color = gender)) + 
+  scale_x_log10()
+```
+
+
+## 按性别计算点赞的总数
+```{r}
+# method 1
+aggregate(pf$www_likes, by=list(gender = pf$gender), FUN = sum)
+
+# method 2
+by(pf$www_likes, pf$gender, sum)
+```
+
+## 箱线图
+```{r}
+qplot(x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender), 
+                    geom = 'boxplot'))
+```
+
+## 创建好友数在0~1000之间的箱线图
+```{r}
+qplot(x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender), 
+                    geom = 'boxplot'), ylim = c(0,1000))
+```
+
+## 创建好友数在0~1000之间的箱线图方法二
+```{r}
+qplot(x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender)), 
+                    geom = 'boxplot') + 
+        scale_y_continuous(limits = c(0,1000))
+
+
+```
+
+## 经过分析可知，大部分的数据都在250以下，所以我们调整y轴为（0，250）
+```{r}
+qplot(x = gender, y = friend_count, 
+      data = subset(pf, !is.na(gender)), 
+                    geom = 'boxplot') + coord_cartesian(ylim = c(0, 250))
+
+by(pf$friend_count, pf$gender, summary)
+```
+
+## 计算男女发起的好友次数谁多
+```{r}
+aggregate(pf$friendships_initiated, list(pf$gender), mean)
+aggregate(pf$friendships_initiated, list(pf$gender), median)
+summary(pf$friendships_initiated)
+
+summary(pf$mobile_likes > 0)
+
+mobile_check_in <- NA
+pf$mobile_check_in <- ifelse(pf$mobile_likes > 0, 1, 0)
+pf$mobile_check_in <- factor(pf$mobile_check_in)
+summary(pf$mobile_check_in)
+
+sum(pf$mobile_check_in == 1)/length(pf$mobile_check_in)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
