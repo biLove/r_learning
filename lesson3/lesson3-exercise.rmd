@@ -1,0 +1,190 @@
+
+## 加载钻石数据集
+钻石数据集在工作空间内被列为一个 'Promise'。这是 R 中的一个特殊对象，你需要在数据上运行一个命令，来完全加载数据集。尝试运行一个摘要。  summary(diamonds)
+
+```{r}
+library(ggplot2)  #必须先加载ggplot包
+data("diamonds") # 加载钻石数据集，ggplot包自带该数据集
+summary(diamonds)
+```
+
+
+## R 中自带一些数据集。你可以输入命令 data(DATA_SET_NAME) 来加载这些数据集。
+## 使用？diamonds来了解关于钻石数据集的信息
+```{r}
+?diamonds
+```
+
+## 练习价格直方图
+```{r}
+qplot(x = price, data = diamonds)
+ggsave('priceHistogram.png') #保存最后一个plot
+summary(diamonds$price)  #计算price的统计数据
+```
+
+## 计算一定价格范围内的钻石数量
+```{r}
+sum(diamonds$price < 500)
+sum(diamonds$price < 250)
+sum(diamonds$price >= 15000)
+```
+
+## 对价格直方图做一些调整
+```{r}
+qplot(x = price, data = diamonds, binwidth = 100) + scale_x_continuous(limits = c(0, 10000), breaks = seq(0,10000,1000))
+
+```
+
+## 切工-价格直方图，按切工来划分
+```{r}
+qplot(x = price, data = diamonds,binwidth = 500) + facet_wrap(~cut, ncol = 3, scales = "free") #参数scales可以让y-axis不统一
+
+```
+
+## 按切工分析钻石价格
+```{r}
+by(diamonds$price, diamonds$cut, max)
+
+by(diamonds$price, diamonds$cut, summary)
+```
+
+## 根据切工分类，计算每克拉钻价格
+```{r}
+price_per_carat <- 0.0
+diamonds$price_per_carat <- diamonds$price / diamonds$carat
+
+## 按切工分类计算
+qplot(x=price_per_carat, data = diamonds, binwidth = 0.05) + 
+  facet_wrap(~cut, ncol = 3, scales = "free") + 
+  scale_x_log10()
+```
+
+
+## 按cut、clarity、color画出相应的箱线图
+```{r}
+qplot(x = clarity, y = price, 
+      data = subset(diamonds, !is.na(clarity)), 
+                    geom = 'boxplot') + coord_cartesian(ylim = c(0, 7500))
+
+by(diamonds$price, diamonds$clarity, summary)
+```
+
+## 按 cut、clarity、color画出相应的箱线图
+```{r}
+qplot(x = cut, y = price, 
+      data = subset(diamonds, !is.na(cut)), 
+                    geom = 'boxplot') + coord_cartesian(ylim = c(0, 7500))
+
+by(diamonds$price, diamonds$cut, summary)
+```
+
+## 按 cut、clarity、color 画出相应的箱线图
+```{r}
+qplot(x = color, y = price, 
+      data = subset(diamonds, !is.na(color)), 
+                    geom = 'boxplot') + coord_cartesian(ylim = c(0, 10000))
+
+by(diamonds$price, diamonds$color, summary)
+```
+
+## 按color表示每克拉的箱线图
+```{r}
+qplot(x = color, y = price_per_carat, 
+      data = subset(diamonds, !is.na(color)), 
+                    geom = 'boxplot') + coord_cartesian(ylim = c(0, 7500))
+
+by(diamonds$price_per_carat, diamonds$color, summary)
+```
+
+
+## carat频率多边形
+```{r}
+
+#diamonds$b <- 1 
+#by(diamonds$b, diamonds$carat, sum)
+
+ggplot(aes(x = carat), data = diamonds) + 
+  geom_freqpoly(binwidth=0.01) + 
+  scale_x_continuous(limits = c(0, 1.10), breaks = seq(0, 1.10, 0.1)) +
+  xlab('carat') + 
+  ylab('frequency') 
+
+```
+
+
+# The Gapminder website contains over 500 data sets with information about
+# the world's population. Your task is to download a data set of your choice
+# and create 2-5 plots that make use of the techniques from Lesson 3.
+
+# You might use a simple histogram, a boxplot split over a categorical variable,
+# or a frequency polygon. The choice is yours!
+
+# You can find a link to the Gapminder website in the Instructor Notes.
+
+# Once you've completed your investigation, create a post in the discussions that includes:
+#       1. any questions you answered, your observations, and summary statistics
+#       2. snippets of code that created the plots
+#       3. links to the images of your plots
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation, and submit it when you are ready.
+# ====================================================================================
+
+## 读取数据
+```{r}
+employ <- read.csv('indicator_t 15-24 employ.csv', sep = ';')   ## 读取数据
+```
+
+## 查看变量
+```{r}
+names(employ)
+```
+
+## 查看1991年的就业率
+```{r}
+summary(employ$X1991)
+
+library("ggplot2")
+qplot(x = X1998, data = employ)
+```
+
+## 1998年就业率的箱线图
+```{r}
+qplot(x = X1998, y = X1998, data = employ, geom = 'boxplot')
+summary(employ$X1998)
+```
+
+## 计算China从1991年到2007年的就业率曲线，暂时不会，等学完了再重新看这部分
+```{r}
+employ$xy <- c(1:178)/10.0
+employ$xy <- factor(employ$xy)
+qplot(x = xy, y = X1998 , data = employ) + 
+  geom_line()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

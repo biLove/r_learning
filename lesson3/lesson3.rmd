@@ -42,6 +42,7 @@ qplot(x = friend_count, data = pf, xlim = c(0, 1000))
 
 ## Anthor method, 使用图层的方法
 ```{r}
+library(ggplot2)
 qplot(x = friend_count, data = pf) + scale_x_continuous(limits = c(0, 1000))
 ```
 
