@@ -4,143 +4,279 @@ Lesson 4
 ***
 
 ### Scatterplots and Perceived Audience Size
-Notes:
+Notes:散点图可以用来观察两个变量之间的关系。
+例如预测自己的好友数目和实际的好友数目，如果预测的准的话，散点图会呈现一条斜线，如果不是，可以来分析为什么
 
 ***
 
 ### Scatterplots
-Notes:
+Notes:练习散点图，加载Facebook数据集
 
 ```{r Scatterplots}
+library(ggplot2)
 
+# 读取数据方法一
+#pf <- read.csv("pseudo_facebook.tsv", sep = '\t')
+#names(pf)
+
+# 读取数据方法二
+pf <- read.delim('pseudo_facebook.tsv') 
+
+#散点图方法一
+#qplot(x = age, y = friend_count, data = pf)
+
+#散点图方法二, geometry几何学， scatterplots散点图
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point()
 ```
 
 ***
 
 #### What are some things that you notice right away?
-Response:
+Response:1、0~20岁左右的低龄用户有很多好友，远超过其他年龄段，这不正常；
+2、100岁左右的用户好友数也特别多，里面可能存在部分虚假年龄的情况
 
 ***
 
 ### ggplot Syntax
-Notes:
+Notes: ggplot比qplot更加正式和详细，允许我们指定更加复杂的图形，其中两种方法之间的主要区别是，
+1、ggplot需要指出geom或者图表类型，例如本例中，geom_point可以绘制散点图；
+2、ggplot使用aes包裹，我们需要将我们的x和y变量包裹在里面
 
 ```{r ggplot Syntax}
+# 使用加法运算符向图形中添加新图层,推荐你在建立图形时，
+#每次添加一个图层，这样允许你调试并发现任何损坏的代码
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point() + 
+  xlim(13,90)
 
+summary(pf$age)
 ```
 
 ***
 
 ### Overplotting
-Notes:
+Notes:由于很多点重叠在一起，看不清具体有多少个，可以使用α参数和geom来设置点的透明度
 
 ```{r Overplotting}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20) + 
+  xlim(13,90)
 
+# 由于年龄是连续变化的，而图中是一个个整数值，故用geom_jitter代替geom_point，使用抖动可向每个年龄添加一些噪声，这样可以更好的看到年龄和好友数关系的图像
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_jitter(alpha = 1/20) + 
+  xlim(13,90)
 ```
 
 #### What do you notice in the plot?
-Response:
+Response:1、低龄人群的好友数没有之前看起来那么高了
+2、峰值仍然在69岁左右
 
 ***
 
 ### Coord_trans()
-Notes:
+Notes: 将y轴的值按平方根进行变换
 
-```{r Coord_trans()}
+```{r}
+# 这里将geom_jetter改回成了geom_point，是因为有些人的好友数量是0，如果向0好友个数添加噪声，结果可能会出现有些好友个数为负的情况，这些平方根就成为虚数
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20) + 
+  xlim(13, 90) + 
+  coord_trans(y = 'sqrt')
 
 ```
 
 #### Look up the documentation for coord_trans() and add a layer to the plot that transforms friend_count using the square root function. Create your plot!
 
 ```{r}
-
+# 抖动可能会给每个点添加正的或负的噪声
+# 如果要进行噪声调整，将设置位置参数等于位置抖动，然后将其传递给最小高度0
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20, position = position_jitter(h = 0)) + 
+  xlim(13, 90) + 
+  coord_trans(y = 'sqrt')
 ```
 
 #### What do you notice?
-
+Notes: 更容易看到好友个数、条件及年龄分布
 ***
 
 ### Alpha and Jitter
-Notes:
+Notes: 问题：研究 friendships_initiated 和age之间的散点图
 
 ```{r Alpha and Jitter}
-
+summary(pf$age)
+ggplot(aes(x = age, y = friendships_initiated), data = pf) + 
+  geom_point(alpha = 1/10 , position = position_jitter(h = 0)) + 
+  coord_trans(y = 'sqrt')
 ```
 
 ***
 
 ### Overplotting and Domain Knowledge
-Notes:
+Notes: 在上面的例子中，我们用α和抖动来减少图形重叠
+另，可以调整散点图如下：用百分比来表示两个变量之间的关系
 
 ***
 
 ### Conditional Means
-Notes:
+Notes:条件均值
+直接使用散点图，我们可能无法判断重要的量，有时候需要了解变量的平均值或中位数的情况对另一个变量会有不同，可以通过其他方式来帮助汇总两个变量之间的关系，而不仅仅总是绘制单个点的图形
+
+可以使用D Plyr包，这个程序包可让我们分割数据框,然后向数据的某些部分应用某个函数，可能会用到的这些常见函数包括筛选、分组、突变和整理。
+简介如下：http://rstudio-pubs-static.s3.amazonaws.com/11068_8bc42d6df61341b2bed45e9a9a3bf9f4.html
+filter()
+group_by()
+mutate()
+arrange()
 
 ```{r Conditional Means}
+#install.packages('dplyr')
+library(dplyr)
 
+# 按年龄对数据框进行分组
+age_groups <- group_by(pf, age)
+# 对这个新组的足够数据进行汇总，创建新变量、平均发帖量、中位数好友数和每个组中的人数
+pf.fc_by_age <- summarise(age_groups, 
+          friend_count_mean = mean(friend_count),   #好友平均数
+          friend_count_median = median(friend_count),  #好友中位数
+          n = n())   #每个组中的人数
+
+pf.fc_by_age <- arrange(pf.fc_by_age, age)
+head(pf.fc_by_age)
+```
+上述方法二：
+我们在需要在每个函数的开始，传递一个数据框，或者分组，还需要将结果保存到新变量中，我们将其传递给下一个函数。
+方法是 %>% 符号，这样可将函数链接到数据集上
+参考链接如下：
+dplyr简介：http://rstudio-pubs-static.s3.amazonaws.com/11068_8bc42d6df61341b2bed45e9a9a3bf9f4.html
+dplyr 教程（第 1 部分）：http://www.r-bloggers.com/hadley-wickhams-dplyr-tutorial-at-user-2014-part-1/
+dplyr 教程（第 2 部分）：http://www.r-bloggers.com/hadley-wickhams-dplyr-tutorial-at-user-2014-part-2/
+
+还有其他方法可以在不使用 dplyr 包的情况下处理数据和创建新的数据框。在这篇博客文章中了解 R 函数 lapply、tapply 和 split
+博客链接为：http://rollingyours.wordpress.com/2014/10/20/the-lapply-command-101/
+
+```{r}
+pf.fc_by_age1 <- pf %>%
+  group_by(age) %>%
+  summarise(friend_count_mean = mean(friend_count), 
+            friend_count_median = median(friend_count), 
+            n = n()) %>%
+  arrange(age)
+
+head(pf.fc_by_age1, 20)
 ```
 
 Create your plot!
 
 ```{r Conditional Means Plot}
-
+library(ggplot2)
+ggplot(aes(x = age, y = friend_count_mean), data = pf.fc_by_age) + 
+  geom_line()
 ```
 
 ***
 
 ### Overlaying Summaries with Raw Data
-Notes:
+Notes:ggplot2很适合进行快速探索以及合并原始数据的图形
+将上面的图形叠加到散点图上，将传递参数stat并设置它等于汇总，并将其给y的一个函数fun.y参数可用于任何函数类型，这样我们可以应用至y值
 
 ```{r Overlaying Summaries with Raw Data}
-
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20, 
+             position = position_jitter(h = 0), 
+             color = 'orange') + #将颜色调整成橙色
+  xlim(13, 90) + 
+  coord_trans(y = 'sqrt') + 
+  geom_line(stat = 'summary', fun.y = mean) + 
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = .1), 
+            linetype = 2, color = 'blue')  + 
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = .5), 
+            color = 'blue')  + 
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = .9), 
+            linetype = 2, color = 'blue')
 ```
 
-#### What are some of your observations of the plot?
-Response:
 
+#### What are some of your observations of the plot?
+Response:1、超过1000个好友相当罕见，90%都远低于1000,可以扩大图层看一下
+从图中我们可以看出，年龄在35~60这个年龄段的人，好友数低于250
+```{r}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  coord_cartesian(xlim = c(13,90), ylim = c(0,1000)) + 
+  geom_point(alpha = 1/20, 
+             position = position_jitter(h = 0), 
+             color = 'orange') + #将颜色调整成橙色、
+  geom_line(stat = 'summary', fun.y = mean) + 
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = .1), 
+            linetype = 2, color = 'blue')  + 
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = .5), 
+            color = 'blue')  + 
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = .9), 
+            linetype = 2, color = 'blue')
+```
 ***
 
 ### Moira: Histogram Summary and Scatterplot
 See the Instructor Notes of this video to download Moira's paper on perceived audience size and to see the final plot.
 
-Notes:
+Notes:下载链接：http://hci.stanford.edu/publications/2013/invisibleaudience/invisibleaudience.pdf
 
 ***
 
 ### Correlation
-Notes:
+Notes:分析师们经常用相关系数来进行这种汇总,使用 ?cor.test 可以查看文档
+一般来说，相关系数大于0.3或者小于-0.3表示有意义但是较小
+0.5附件表示中等
+0.7以上为相关性很大
+还可以用宽度函数with()来计算相关系数,宽度函数允许我们在从数据构造的环境中对R表达式求值
 
 ```{r Correlation}
+# method1
+#cor(pf$age, pf$friend_count)
+
+# method2
+cor.test(pf$age, pf$friend_count, method = 'pearson')
+
+# method3
+with(pf, cor.test(age, friend_count, method = 'pearson'))
 
 ```
 
 Look up the documentation for the cor.test function.
 
 What's the correlation between age and friend count? Round to three decimal places.
-Response:
+Response:-0.027
 
 ***
 
 ### Correlation on Subsets
-Notes:
+Notes:从图形中，我们知道，好友数与年龄直接并没有递增或递减的关系，如果想知道70岁以下的人年龄与好友数的相关系数，应该怎么计算呢？
+cor.test默认使用pearson积距关联
 
 ```{r Correlation on Subsets}
-with(                 , cor.test(age, friend_count))
+with(subset(pf, age <= 70), cor.test(age, friend_count))
 ```
 
 ***
 
 ### Correlation Methods
-Notes:
+Notes:相关分析法， Pearson积距关联衡量两个变量之间的关联强度，但是还有很多其他类型的关系，即便其他类型是单调的，上升或者下降，所有我们也有单调关系的度量，比如等级相关度量，如Spearman，我们可将Spearman分配给方法参数，那样计算相关性，这里我们有不同的测试统计，叫做row
+计算相关系数有用，但是不能完全取代scatter plot的作用，可以结合起来使用
 
 ***
 
 ## Create Scatterplots
-Notes:
+Notes:创建 www_likes_received（x）和 likes_received (y)的散点图
 
 ```{r}
-
+ggplot(aes(x = www_likes_received, y = likes_received), data = pf) + 
+  geom_point(alpha = 1/10, 
+             color = 'orange') + 
+  scale_x_log10() + 
+  scale_y_log10()
+  
 ```
 
 ***
@@ -149,48 +285,60 @@ Notes:
 Notes:
 
 ```{r Strong Correlations}
+ggplot(aes(x = www_likes_received, y = likes_received), data = pf) + 
+  geom_point(alpha = 1/10, 
+             color = 'blue') + 
+  xlim(0, quantile(pf$www_likes_received, 0.95)) + 
+  ylim(0, quantile(pf$likes_received, 0.95)) + 
+  geom_smooth(method = 'lm', color = 'red')
 
 ```
 
 What's the correlation betwen the two variables? Include the top 5% of values for the variable in the calculation and round to 3 decimal places.
 
 ```{r Correlation Calcuation}
-
+with(pf, cor.test(www_likes_received, likes_received))
 ```
 
-Response:
+Response: 0.948
 
 ***
 
 ### Moira on Correlation
-Notes:
-
+Notes: 根据moira的研究，很多变量之所以强相关，是因为他们度量的是同一个东西，比如跟活跃度相关的变量，如登录天数，发帖量之类的，彼此之间就会有比较强的相关性。
+但是有时候强相关并不能准确判断是由那个变量引起的，即便如此，还是可以根据相关性来确定哪些变量值得研究，哪些不值得研究
+线性回归的假设：http://en.wikipedia.org/wiki/Linear_regression#Assumptions
 ***
 
 ### More Caution with Correlation
-Notes:
+Notes: 相关性可以帮我们判断哪些变量有关系，但是一不小心，可能会被相关系数欺骗
+所以，最好的方式是将数据绘图来帮助你理解数据，可以带来更深的信息
 
 ```{r More Caution With Correlation}
-install.packages('alr3')
+#install.packages('alr3')
 library(alr3)
+data("Mitchell")  #这个数据集包含了Nebraska市的土壤温度，通过这个数据集，可以看到关联性会有些欺骗性
+?Mitchell     #查看数据基本情况
+summary(Mitchell)   #加载数据
 ```
 
 Create your plot!
 
 ```{r Temp vs Month}
-
+ggplot(aes(x = Month, y = Temp), data = Mitchell) + 
+  geom_point()
 ```
 
 ***
 
 ### Noisy Scatterplots
 a. Take a guess for the correlation coefficient for the scatterplot.
-
+0
 b. What is the actual correlation of the two variables?
 (Round to the thousandths place)
 
 ```{r Noisy Scatterplots}
-
+cor.test(Mitchell$Temp, Mitchell$Month)
 ```
 
 ***
@@ -199,6 +347,15 @@ b. What is the actual correlation of the two variables?
 Notes:
 
 ```{r Making Sense of Data}
+ggplot(aes(x = Month, y = Temp), data = Mitchell) + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(0,203,12)) + 
+  
+
+with(subset(Mitchell, Month <= 12), cor.test(Month, Temp, method = 'spearman'))
+
+ggplot(aes(x = (Month%%12), y = Temp), data = Mitchell) + 
+  geom_point()
 
 ```
 
@@ -207,59 +364,103 @@ Notes:
 ### A New Perspective
 
 What do you notice?
-Response:
+Response: 可以看到一个有规律的曲线，以6月为中位线，两边对称，先升后降。
 
 Watch the solution video and check out the Instructor Notes!
-Notes:
+Notes: 应该将y轴比例变小，再来查看数据的变化
 
 ***
 
 ### Understanding Noise: Age to Age Months
-Notes:
+Notes: 将年龄转化为带月份的年龄
+假设计算年龄的参考日期为 2013 年 12 月 31 日，并且 age 变量给出 2013 年末的年龄。
+数据框 pf 中的变量 age_with_months 应为一个十进制值。例如：一个出生在 3 月份、年龄为 33 岁的人的 age_with_months 值为 33.75，因为从 3 月份到年末有 9 个月。
+
+Two alternate solutions: 
+pf$age_with_months <- pf$age + (1 - pf$dob_month / 12) 
+pf$age_with_months <- with(pf, age + (1 - dob_month / 12))
 
 ```{r Understanding Noise: Age to Age Months}
-
+pf$age_with_months <- with(pf, age + (1 - dob_month / 12))
 ```
 
 ***
 
 ### Age with Months Means
+使用 dplyr 包中的 group_by()、summarise() 和 arrange() 函数根据 age_with_month 分拆数据框。请确保你根据正确的变量（不再是年龄）进行排列。 
+
 
 ```{r Age with Months Means}
-
+pf.fc_by_age_months <- pf %>% 
+  group_by(age_with_months) %>% 
+  summarise(friend_count_mean = mean(friend_count), 
+            friend_count_median = median(friend_count), 
+            n = n()) %>%
+  arrange(age_with_months)
 ```
 
 Programming Assignment
 ```{r Programming Assignment}
+ggplot(aes(x = age_with_months, y = friend_count_mean), 
+       data = subset(pf.fc_by_age_months, age_with_months < 71)) + 
+  geom_line()
 
 ```
+
 
 ***
 
 ### Noise in Conditional Means
+从上图可以看出，采用的容器越精密，噪声越大
 
 ```{r Noise in Conditional Means}
+p1 <- ggplot(aes(x = age, y = friend_count_mean), 
+       data = subset(pf.fc_by_age, age < 71)) + 
+  geom_line()
 
+p2 <- ggplot(aes(x = age_with_months, y = friend_count_mean), 
+       data = subset(pf.fc_by_age_months, age_with_months < 71)) + 
+  geom_line()
+
+library(gridExtra) #可以将两个图放在一起观察
+grid.arrange(p2, p1, ncol = 1)
 ```
 
 ***
 
 ### Smoothing Conditional Means
-Notes:
+Notes: 通过降低容器大小，并增加容器数量，使得噪声更多，我们减少了估计每个条件平均的数据，可以看出，加上月份以后的数据噪声更多，因为我们采用更精细的容器
+从另一个方面来说，我们可以通过增加容器大小，来减小噪声
+局部回归LOESS：http://simplystatistics.org/2014/02/13/loess-explained-in-a-gif/
 
 ```{r Smoothing Conditional Means}
+p1 <- ggplot(aes(x = age, y = friend_count_mean), 
+       data = subset(pf.fc_by_age, age < 71)) + 
+  geom_line() + 
+  geom_smooth()
 
+p2 <- ggplot(aes(x = age_with_months, y = friend_count_mean), 
+       data = subset(pf.fc_by_age_months, age_with_months < 71)) + 
+  geom_line() + 
+  geom_smooth()
+
+p3 <- ggplot(aes(x = round(age / 5)*5, y = friend_count), 
+             data = subset(pf, age < 71)) + 
+  geom_line(stat = 'summary', fun.y = mean)
+
+library(gridExtra) #可以将两个图放在一起观察
+grid.arrange(p2, p1, p3, ncol = 1)
 ```
 
 ***
 
 ### Which Plot to Choose?
-Notes:
+Notes: 有时候不需要选择，可以针对同一组数据做很多次探索，来探索数据之间的关系，用ggplot一层一层叠加的方式很好，容易找到问题所在
 
 ***
 
 ### Analyzing Two Variables
-Reflection:
+Reflection: 本课学习了散点图、条件平均、和相关系数
 
 ***
 
