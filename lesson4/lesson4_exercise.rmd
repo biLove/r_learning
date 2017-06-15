@@ -1,11 +1,12 @@
 # 探索diamonds数据集
 1、加载数据集
 2、加载ggplot2库
-```{r}
+```{r, echo=TRUE}
+library(ggplot2)
 data("diamonds")
 summary(diamonds)
 ?diamonds
-library(ggplot2)
+
 ```
 
 1、用散点图探索price和x的关系
