@@ -1,0 +1,156 @@
+# 探索diamonds数据集
+1、加载数据集
+2、加载ggplot2库
+```{r}
+data("diamonds")
+summary(diamonds)
+?diamonds
+library(ggplot2)
+```
+
+1、用散点图探索price和x的关系
+```{r}
+ggplot(aes(x=x, y = price), data = diamonds) + 
+  geom_point()
+```
+
+2、练习发现-价格与x的关系
+从图中可以看出，x与price相关性很大，x大部分值再3.5~9之间，而y的值随着x的增加几乎呈指数增长
+
+3、练习相关性
+练习price与x、y、z的相关性
+```{r}
+with(diamonds, cor.test(price, x))
+with(diamonds, cor.test(price, y))
+with(diamonds, cor.test(price, z))
+```
+
+4、练习价格与深度
+建立price与depth之间的散点图
+```{r}
+ggplot(aes(x = depth, y = price), data = diamonds) + 
+  geom_point()
+```
+
+5、调整-价格与深度
+调整透明度为1/100
+```{r}
+ggplot(aes(x = depth, y = price), data = diamonds) + 
+  geom_point(alpha = 1/100)
+```
+
+6、练习典型的深度范围
+观察图形可知，大部分的深度范围在58~64之间
+
+7、练习相关性-价格与深度
+```{r}
+with(diamonds, cor.test(price, depth))
+```
+结合相关系数和图形，可以看出，price和depth没有直接关系
+
+8、探索价格与克拉之间的关系
+绘制价格最高的1%的数据与carat之间的散点图
+```{r}
+max_price <- max(diamonds$price)
+ggplot(aes(x = carat, y = price), data = subset(diamonds, price < max_price*0.09)) + 
+  geom_point()
+```
+
+9、价格和提交
+建立一个价格和体积的散点图，其中体积volume = x*y*z
+```{r}
+diamonds$volume <- with(diamonds, x*y*z)
+ggplot(aes(x = volume, y = price), data = diamonds) + 
+  geom_point()
+
+library(plyr)
+count(diamonds$volume == 0)
+```
+
+10、练习发现-价格与体积
+
+1）从图中可以看出，体积大致在0~500之间，价格随体积增加成指数级增加趋势。
+2）有很多异常值，例如体积为0的值，和体积为4000的值，还有一个体积为900但是很便宜的钻。
+
+可以用count(diamonds$volume == 0)来查看有多少个体积为0的值，其中count函数是来自plyr包,经过计算可知，有20个体积为0的值
+
+11、练习子集相关性
+计算价格和体积的相关性，去掉体积异常的点，这里体积为0或体积>=800的都算异常点
+```{r}
+with(subset(diamonds, volume >0 & volume < 800), cor.test(price, volume))
+```
+计算可知，price与volume的相关系数为 0.92
+
+12、练习调整-价格与体积
+1）去掉volume为0或者>=800的点
+2）调整散点图的点的透明度，增加一个线性模型，geom_smooth()
+
+```{r}
+ggplot(aes(x = volume, y = price), data = subset(diamonds, volume >0 & volume < 800)) + 
+  geom_point(alpha = 1/10) + 
+  geom_smooth()
+```
+从上图可以看出，volume为0~400时，价格随体积增加而增加，而当volume大于400后，体积对价格的影响变小了，且呈现快速下降的趋势，不排除这里有异常值，因为不符合常理。
+
+13、练习平均价格-净度
+新建一个名为 diamondsByClarity 的数据帧，包含diamonds by clarity的信息
+需要每个净度的
+(1) mean_price
+(2) median_price
+(3) min_price
+(4) max_price
+(5) n
+由于plyr和dplyr会冲突，所以最好是先卸载 plyr 包。
+detach("package:plyr", unload=TRUE) 
+
+```{r}
+detach("package:plyr", unload=TRUE) 
+library(dplyr)
+diamondsByClarity <- diamonds %>% 
+  group_by(clarity) %>% 
+  summarise(mean_price = mean(price), 
+            median_price = median(price), 
+            min_price = min(price), 
+            max_price = max(price), 
+            n = n())
+
+head(diamondsByClarity)
+```
+
+14、练习平均价格柱状图
+
+```{r}
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+
+p1 <- ggplot(aes(x = clarity, y = mean_price), data = diamonds_mp_by_clarity) + 
+  geom_col()
+p2 <- ggplot(aes(x = color, y = mean_price), data = diamonds_mp_by_color) + 
+  geom_col()
+
+library(gridExtra)
+grid.arrange(p1, p2, ncol = 2)
+```
+
+15、平均价格的趋势
+从上图观察可知，净度变高时，平均价格大致呈现下降趋势，但也有例外，例如l1和1F，净度最低和净度最高时，不在这个趋势范围内
+
+color：颜色从好逐步变差时，平均价格呈现上升趋势
+可以说，这两个趋势与我们的直觉有差别，趋势正好相反，由此可以看出，clarity和color并不是价格的决定因素，肯定有其他因素影响更大。
+
+
+16、练习重访 Gapminder
+用这一课学到的内容研究Gapminder的数据
+```{r}
+#读取每个国家的就业率数据
+employ_indicator <- read.csv("indicator_t 15-24 employ.csv", sep = ";")
+
+# 查看1991年与2001年的就业率数据,使用散点图来计算
+ggplot(aes(x = X1991, y = X2001), data = employ_indicator) + 
+  geom_point() + 
+  geom_smooth()
+```
+
