@@ -31,6 +31,7 @@ Notes:1、了解钻石市场背后的财富历史，并使用EDA的方法，来�
 
 ```{r Scatterplot Review}
 data("diamonds")
+library(ggplot2)
 ggplot(aes(x = carat, y = price), 
        data = diamonds) + 
   geom_point() + 
