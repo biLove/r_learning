@@ -40,7 +40,6 @@ ggplot(aes(x = carat, y = price),
 
 #ggsave("carat_price.png")
 ```
-![](carat_price.png)
 ***
 
 ### Price and Carat Relationship
@@ -56,10 +55,8 @@ ggplot(aes(x = carat, y = price), data = diamonds) +
   stat_smooth(method = 'lm') + 
   scale_x_continuous(lim = c(0, quantile(diamonds$carat, 0.99))) + 
   scale_y_continuous(lim = c(0, quantile(diamonds$price, 0.99)))
-
-#ggsave("carat_price_linear.png")
 ```
-![](carat_price_linear.png)
+
 
 从上图可以看到，趋势线在一些关键区域不会穿过数据的中心。在关系的中心应有点弧度，而且应该向尾部更朝上点倾斜，如果我们尝试用这个来做预测，我们可能会在所显示的现有数据内部和外部错过一些关键区域。
 ***
@@ -104,10 +101,8 @@ diamond_samp <- diamonds[sample(1:length(diamonds$price), 10000), ]
 ggpairs(diamond_samp, 
   lower = list(continuous = wrap("points", shape = I('.'))), 
   upper = list(combo = wrap("box", outlier.shape = I('.'))))
-#ggsave("diamonds_ggpairs.png")
 ```
 
-![](diamonds_ggpairs.png)
 What are some things you notice in the ggpairs output?
 Response:
 1、carat-price 基本上呈现指数级增长；
@@ -148,9 +143,7 @@ qplot(carat, price, data = diamonds) +
   scale_y_continuous(trans = log10_trans()) + 
   ggtitle('Price (log10) by Carat')
 
-#ggsave("carat_price_log10.png")
 ```
-![](carat_price_log10.png)
 
 ### Create a new function to transform the carat variable
 
@@ -169,9 +162,8 @@ ggplot(aes(carat, price), data = diamonds) +
                      breaks = c(350, 1000, 5000, 10000, 15000)) +
   ggtitle('Price (log10) by Cube-Root of Carat')
 
-#ggsave("price_log10_by_cube_root_of_carat.png")
 ```
-![](price_log10_by_cube_root_of_carat.png)
+
 ***
 
 ### Overplotting Revisited
@@ -191,9 +183,9 @@ ggplot(aes(carat, price), data = diamonds) +
                      breaks = c(350, 1000, 5000, 10000, 15000)) +
   ggtitle('Price (log10) by Cube-Root of Carat')
 
-#ggsave("overplotting_price_carat.png")
+
 ```
-![](overplotting_price_carat.png)
+
 ***
 
 ### Other Qualitative Factors
@@ -221,9 +213,9 @@ ggplot(aes(x = carat, y = price, color = clarity), data = diamonds) +
     breaks = c(350, 1000, 5000, 10000, 15000)) +
   ggtitle('Price (log10) by Cube-Root of Carat and Clarity')
 
-#ggsave("price_carat_clarity.png")
+
 ```
-![](price_carat_clarity.png)
+
 ***
 
 ### Clarity and Price
@@ -246,9 +238,8 @@ ggplot(aes(x = carat, y = price, color = cut), data = diamonds) +
                      breaks = c(350, 1000, 5000, 10000, 15000)) +
   ggtitle('Price (log10) by Cube-Root of Carat and Cut')
 
-#ggsave("price_carat_cut.png")
 ```
-![](price_carat_cut.png)
+
 ***
 
 ### Cut and Price
@@ -271,9 +262,9 @@ ggplot(aes(x = carat, y = price, color = color), data = diamonds) +
                      breaks = c(350, 1000, 5000, 10000, 15000)) +
   ggtitle('Price (log10) by Cube-Root of Carat and Color')
 
-#ggsave("price_carat_color.png")
+
 ```
-![](price_carat_color.png)
+
 ***
 
 ### Color and Price
