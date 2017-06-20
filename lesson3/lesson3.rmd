@@ -10,7 +10,7 @@ pf <- read.csv('pseudo_facebook.tsv', sep = '\t')   ## 读取数据
 
 names(pf)   ##查看数据里面的变量
 
-install.packages('ggplot2')
+#install.packages('ggplot2')
 library(ggplot2)
 ```
 
@@ -102,7 +102,7 @@ summary(sqrt(pf$friend_count))
 
 ## 加载gridExtra安装包，以便可以在一个页面上创建多个图
 ```{r}
-install.packages('gridExtra') 
+#install.packages('gridExtra') 
 library(gridExtra) 
 ```
 
