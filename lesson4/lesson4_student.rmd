@@ -349,7 +349,7 @@ Notes:
 ```{r Making Sense of Data}
 ggplot(aes(x = Month, y = Temp), data = Mitchell) + 
   geom_point() + 
-  scale_x_continuous(breaks = seq(0,203,12)) + 
+  scale_x_continuous(breaks = seq(0,203,12))
   
 
 with(subset(Mitchell, Month <= 12), cor.test(Month, Temp, method = 'spearman'))
