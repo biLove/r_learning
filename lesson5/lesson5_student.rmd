@@ -32,9 +32,9 @@ ggplot(aes(x = gender, y = age),
 ggplot(aes(x = age, y = friend_count), 
        data = subset(pf, !is.na(gender))) + 
   geom_line(aes(color = gender), stat = 'summary', fun.y = median)
-#ggsave("age_friend_count.png")
+
 ```
-![](age_friend_count.png)
+
 
 建议新的数据集 pf.fc_by_age_gender，将数据按照age和gender分组
 ```{r}
@@ -77,9 +77,9 @@ Notes: 使用新数据来画折线图
 ```{r Plotting Conditional Summaries}
 ggplot(aes(x = age, y = median_friend_count), data = pf.fc_by_age_gender1) + 
   geom_line(aes(color = gender))
-#ggsave("age_median_friend_count.png")
+
 ```
-![](age_median_friend_count.png)
+
 ***
 
 ### Thinking in Ratios
@@ -138,9 +138,9 @@ pf.fc_by_age_gender.wide$female_male_ratio <- with(pf.fc_by_age_gender.wide, fem
 ggplot(aes(x=age, y=female_male_ratio), data = pf.fc_by_age_gender.wide) + 
   geom_line() + 
   geom_hline(yintercept = 1, alpha = 0.3, linetype = 2)
-#ggsave("age_female_male_ratio.png")
+
 ```
-![](age_female_male_ratio.png)
+
 ***
 
 ### Third Quantitative Variable
@@ -186,9 +186,9 @@ ggplot(aes(x = age, y = friend_count),
   geom_line(aes(color = year_joined.bucket), 
             stat = 'summary', 
             fun.y = median)
-#ggsave("age_year_joined_bucket.png")
+
 ```
-![](age_year_joined_bucket.png)
+
 ***
 
 ### Plot the Grand Mean
@@ -203,9 +203,9 @@ ggplot(aes(x = age, y = friend_count),
   geom_line(linetype = 2, 
             stat = 'summary', 
             fun.y = mean)
-#ggsave("age_year_joined_bucket_full_median.png")
+
 ```
-![](age_year_joined_bucket_full_median.png)
+
 ***
 
 ### Friending Rate
@@ -233,9 +233,9 @@ ggplot(aes(x = tenure, y = friendships_initiated / tenure),
   geom_line(aes(color = year_joined.bucket), 
             stat = 'summary', 
             fun.y = mean)
-#ggsave("tenure_friendships_initiated.png")
+
 ```
-![](tenure_friendships_initiated.png)
+
 ***
 
 ### Bias-Variance Tradeoff Revisited
@@ -335,9 +335,9 @@ Notes: 建立一个价格和时间的散点图
 ```{r Prices over Time}
 ggplot(aes(x = time, y = price), data = yo) + 
   geom_point(alpha = 1/5)
-#ggsave("yo_price_over_time.png")
+
 ```
-![](yo_price_over_time.png)
+
 
 从上图中可以看出，酸奶价格随时间变化整体呈现上涨的趋势，但是有一些零散的点，应该是商家打折或者做促销时的价格。
 
@@ -360,10 +360,9 @@ ggplot(aes(x = time, y = price),
   geom_line() + 
   geom_point(aes(size = all.purchases), pch = 1)
 
-#ggsave("samples_of_households_time_price.png")
+
 ```
-结果如下：
-![](samples_of_households_time_price.png)
+
 
 从图中可以看出这16个家庭购买酸奶的情况。   
 x %in% y 返回一个长度与 x 相同的逻辑（布尔）向量，该向量指出 x 中的每一个条目是否都出现在 y 中。
@@ -393,9 +392,9 @@ set.seed(1836)
 pf_subset <- pf[, c(2:7)]
 names(pf_subset)
 ggpairs(pf_subset[sample.int(nrow(pf_subset), 1000), ])
-#ggsave("scatterplot_matrix.png")
+
 ```
-![](scatterplot_matrix.png)
+
 
 使用散点图矩阵，便于我们分析多个变量的情况
 
@@ -427,9 +426,9 @@ ggplot(aes(y = gene, x = case, fill = value),
   geom_tile() +
   scale_fill_gradientn(colours = colorRampPalette(c("blue", "red"))(100))
 
-#ggsave("gene_hot_map.png")
+
 ```
-![](gene_hot_map.png)
+
 
 ***
 
